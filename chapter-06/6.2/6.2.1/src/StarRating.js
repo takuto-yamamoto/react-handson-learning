@@ -1,6 +1,7 @@
-import React from "react";
-import Star from "./Star";
+import React from 'react';
+import Star from './Star';
 
+// ステートを内部で持つ必要がない（propsから受け取る）
 export default function StarRating({ totalStars = 5, selectedStars = 0 }) {
   return (
     <>
