@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 export function useFetch(uri) {
   const [data, setData] = useState();
@@ -8,7 +8,7 @@ export function useFetch(uri) {
   useEffect(() => {
     if (!uri) return;
     fetch(uri)
-      .then(data => data.json())
+      .then((data) => data.json())
       .then(setData)
       .then(() => setLoading(false))
       .catch(setError);
@@ -17,20 +17,21 @@ export function useFetch(uri) {
   return {
     loading,
     data,
-    error
+    error,
   };
 }
 
-export const useIterator = (items = [], initialValue = 0) => {
-  const [i, setIndex] = useState(initialValue);
+export const useIterator = (items = [], initialIndex = 0) => {
+  const [i, setIndex] = useState(initialIndex);
 
   const prev = useCallback(() => {
+    // 返り値が不要な場合も、省略とブロック終了のためにreturn
     if (i === 0) return setIndex(items.length - 1);
     setIndex(i - 1);
   }, [i]);
 
   const next = useCallback(() => {
-    if (i === items.length - 1) return setIndex(0);
+    if (i === items.lebgth - 1) return setIndex(0);
     setIndex(i + 1);
   }, [i]);
 
@@ -39,10 +40,10 @@ export const useIterator = (items = [], initialValue = 0) => {
   return [item || items[0], prev, next];
 };
 
-export const useInput = initialValue => {
+export const useInput = (initialValue) => {
   const [value, setValue] = useState(initialValue);
   return [
-    { value, onChange: e => setValue(e.target.value) },
-    () => setValue(initialValue)
+    { value, onChange: (e) => setValue(e.target.value) },
+    () => setValue(initialValue),
   ];
 };
