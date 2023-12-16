@@ -175,7 +175,7 @@ const AppRenderEmpty = () => {
 // 仮想リスト
 // 巨大なデータ配列があった場合、一度にそんなには画面上に表示できない
 import faker from 'faker';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const bigList = [...Array(5000)].map(() => ({
   name: faker.name.findName(),
@@ -289,6 +289,89 @@ const UserDetails = ({ data }) => {
         {data.name && <p>{data.name}</p>}
         {data.location && <p>{data.location}</p>}
       </div>
+    </div>
+  );
+};
+
+// 複数のリクエスト
+// 配列をイテレートするフック
+const useIterator = (items = [], initialIndex = 0) => {
+  const [index, setIndex] = useState(initialIndex);
+
+  const prev = () => {
+    if (index === 0) return setIndex(items.length - 1);
+    setIndex(index - 1);
+  };
+
+  const next = () => {
+    if (index === items.length - 1) return setIndex(0);
+    setIndex(index + 1);
+  };
+
+  return [items[index], prev, next];
+};
+
+// 関数のメモ化（パフォーマンスというよりは再レンダリングの防止）
+const useIteratorMemo = (items = [], initialIndex = 0) => {
+  const [index, setIndex] = useState(initialIndex);
+
+  const prev = useCallback(() => {
+    if (index === 0) return setIndex(items.length - 1);
+    setIndex(index - 1);
+  }, [index]);
+
+  const next = useCallback(() => {
+    if (index === items.length - 1) return setIndex(0);
+    setIndex(index + 1);
+  }, [index]);
+
+  const item = useMemo(() => item[index], [index]);
+
+  return [items[index], prev, next];
+};
+
+// リポジトリのリストをイテレートできるコンポーネント
+const RepoMenu = (repositories, onSelect = (f) => f) => {
+  const [{ name }, previous, next] = useIterator(repositories);
+
+  useEffect(() => {
+    if (!name) return;
+    onSelect(name);
+  }, [name]);
+
+  return (
+    <div>
+      <button onClick={previous}>&lt;</button>
+      <p>name</p>
+      <button onClick={next}>&gt;</button>
+    </div>
+  );
+};
+
+const UserRepositories = ({ login, onSelect }) => {
+  return (
+    <Fetch
+      uri={`https://api.github.com/users/${login}/repos`}
+      renderSuccess={({ data }) => (
+        <RepoMenu repositories={data} onSelect={onSelect} />
+      )}
+    />
+  );
+};
+
+const UserDetailsWithFetch = ({ data }) => {
+  return (
+    <div className="githubUser">
+      <img src={data.avatar_url} alt={data.login} style={{ width: 200 }} />
+      <div>
+        <h1>{data.login}</h1>
+        {data.name && <p>{data.name}</p>}
+        {data.location && <p>{data.location}</p>}
+      </div>
+      <UserRepositories
+        login={data.login}
+        onSelect={(repoName) => console.log(`${repoName} selected`)}
+      />
     </div>
   );
 };
